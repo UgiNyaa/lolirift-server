@@ -1,7 +1,17 @@
-module.exports = {
-  name: 'hello',
-  paramTypes: { },
-  run: (player, world, unit, params) => {
-    player.ws.send(JSON.stringify({ message: 'hello' }))
+class hello {
+  static paramTypes = { }
+
+  constructor (world, player, unit, params) {
+    this.world = world
+    this.player = player
+    this.unit = unit
+    this.params = params
+  }
+
+  run (dt) {
+    this.player.ws.send(JSON.stringify({ message: 'hello' }))
+    return false
   }
 }
+
+module.exports = hello

@@ -21,11 +21,11 @@ module.exports = (owner) => {
 
     stats: {
       health: 100,
-      range: 5,
+      range: 10,
     },
 
     actions: [
-      require('../actions/hello').name,
+      'hello',
     ],
   }
 }

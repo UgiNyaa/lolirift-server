@@ -1,10 +1,6 @@
 const WebSocket = require('ws')
 const url = require('url')
 
-const actions = [
-  require('./actions/hello')
-]
-
 const base = require('./units/base')
 
 let nextPlayerID = 0
@@ -12,7 +8,7 @@ let nextPlayerID = 0
 var world = {
   players: [],
   units: [],
-  queuedActions: [],
+  processing: [],
 }
 
 const wss = new WebSocket.Server({ port: 8080 })
@@ -40,6 +36,13 @@ wss.on('connection', (ws) => {
 
       // give him the new player websocket connection
       player.ws = ws
+
+      // send him all his unit informations
+      for (var i = 0; i < world.units.length; i++) {
+        if (world.units[i].owner === player.id) {
+          ws.send(JSON.stringify(world.units[i]))
+        }
+      }
     }
   } else {
     // if there is no player with the given name at all, create the player with new id and the given name
@@ -54,15 +57,15 @@ wss.on('connection', (ws) => {
 
     // also add the player to the world
     world.players.push(player)
+
+    var baseUnit = base(player.id)
+    baseUnit.position.x = player.id * 10
+    baseUnit.position.y = player.id * 10
+    world.units.push(baseUnit)
+
+    ws.send(JSON.stringify(baseUnit))
   }
 
-  // TODO: add a base unit, since the player can not manipulate the world without a single unit
-  var baseUnit = base(player.id)
-  baseUnit.position.x = player.id * 10
-  baseUnit.position.y = player.id * 10
-  world.units.push(baseUnit)
-
-  ws.send(JSON.stringify(baseUnit))
 
   // reacting to players request
   ws.on('message', (message) => {
@@ -79,7 +82,7 @@ wss.on('connection', (ws) => {
 
     // checking whether the player owns this unit
     if (unit.owner !== player.id) {
-      ws.send(JSON.stringify({ message: 'you do not won this unit' }))
+      ws.send(JSON.stringify({ message: 'you do not own this unit' }))
       return
     }
 
@@ -90,10 +93,10 @@ wss.on('connection', (ws) => {
     }
 
     // getting the action that is going to manipulate the unit
-    var action = actions.find((a) => a.name === json.action)
+    const action = require('./actions/' + json.action)
 
     // manipulating the unit with the given action
-    action.run(player, world, unit, json.params)
+    world.processing.push(new action(world, player, unit, json.params))
   })
 
   // reacting to a disconnect from the player
@@ -108,5 +111,12 @@ wss.on('connection', (ws) => {
 });
 
 setInterval(() => {
-  console.log('hi')
+    for (var i = 0; i < world.processing.length; i++) {
+      // process and determin whether the process is finished or not
+      if (!world.processing[i].run(.1)) {
+        console.log(world.processing[i].constructor.name + ' has been processed');
+        world.processing.splice(i, 1)
+        i--
+      }
+    }
 }, 100)
