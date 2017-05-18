@@ -2,6 +2,7 @@ const WebSocket = require('ws')
 const url = require('url')
 
 const base = require('./units/base')
+const loli = require('./units/loli')
 
 let nextPlayerID = 0
 
@@ -64,6 +65,13 @@ wss.on('connection', (ws) => {
     world.units.push(baseUnit)
 
     ws.send(JSON.stringify(baseUnit))
+
+    // var loliUnit = loli(player.id)
+    // loliUnit.position.x = player.id * 10 + 5
+    // loliUnit.position.y = player.id * 10 + 5
+    // world.units.push(loliUnit)
+    //
+    // ws.send(JSON.stringify(loliUnit))
   }
 
 
@@ -92,11 +100,15 @@ wss.on('connection', (ws) => {
       return
     }
 
+    var splited = json.action.split(':')
+    var actionString = splited[0]
+    var modifier =  splited.length > 1 ? splited[1] : ""
+
     // getting the action that is going to manipulate the unit
-    const action = require('./actions/' + json.action)
+    const action = require('./actions/' + actionString)
 
     // manipulating the unit with the given action
-    world.processing.push(new action(world, player, unit, json.params))
+    world.processing.push(new action(world, player, unit, modifier, json.params))
   })
 
   // reacting to a disconnect from the player

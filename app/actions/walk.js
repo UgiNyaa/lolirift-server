@@ -6,15 +6,15 @@ class walk {
     }
   }
 
-  constructor (world, player, unit, params) {
+  constructor (world, player, unit, modifier, params) {
     this.world = world
     this.player = player
     this.unit = unit
     this.params = params
 
     this.direction = {
-      x: this.destination.x - this.unit.position.x,
-      y: this.destination.y - this.unit.position.y,
+      x: this.params.destination.x - this.unit.position.x,
+      y: this.params.destination.y - this.unit.position.y,
     }
 
     var length = Math.sqrt(
@@ -24,23 +24,54 @@ class walk {
 
     this.direction.x /= length
     this.direction.y /= length
+    player.ws.send(JSON.stringify(this.direction))
 
-    this.actualPosition = this.unit.position
+    this.actualPosition = {
+      x: this.unit.position.x,
+      y: this.unit.position.y,
+    }
+
+    this.time = 0
+  }
+
+  roundx (n) {
+    if (this.direction.x > 0)
+      return Math.floor(n)
+    else
+      return Math.ceil(n)
+  }
+
+  roundy (n) {
+    if (this.direction.y > 0)
+      return Math.floor(n)
+    else
+      return Math.ceil(n)
   }
 
   run (dt) {
-    this.actualPosition.x += (speed * dt * this.direction.x)
-    this.actualPosition.y += (speed * dt * this.direction.y)
+    this.actualPosition.x += (this.unit.stats.speed * dt * this.direction.x)
+    this.actualPosition.y += (this.unit.stats.speed * dt * this.direction.y)
 
-    if (Math.floor(this.actualPosition.x) !== this.unit.position.x) {
-      this.unit.position.x = Math.floor(this.actualPosition.x)
+    this.player.ws.send(this.time)
+    this.time += dt
+
+    if (this.roundx(this.actualPosition.x) !== this.unit.position.x) {
+      this.unit.position.x = this.roundx(this.actualPosition.x)
       this.player.ws.send(JSON.stringify(this.unit))
     }
 
-    if (Math.floor(this.actualPosition.y) !== this.unit.position.y) {
-      this.unit.position.y = Math.floor(this.actualPosition.y)
+    if (this.roundy(this.actualPosition.y) !== this.unit.position.y) {
+      this.unit.position.y = this.roundy(this.actualPosition.y)
       this.player.ws.send(JSON.stringify(this.unit))
     }
+
+    if (
+      this.unit.position.x === this.params.destination.x &&
+      this.unit.position.y === this.params.destination.y
+    ) {
+      return false
+    }
+    return true
   }
 }
 

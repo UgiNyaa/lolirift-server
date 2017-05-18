@@ -20,6 +20,7 @@ module.exports = (owner) => {
 
     actions: [
       'walk',
+      'hello',
     ]
   }
 }

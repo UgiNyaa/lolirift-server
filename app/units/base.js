@@ -22,10 +22,14 @@ module.exports = (owner) => {
     stats: {
       health: 100,
       range: 10,
+      durations: {
+        loli: 10,
+      },
     },
 
     actions: [
       'hello',
+      'train:loli',
     ],
   }
 }

@@ -1,7 +1,7 @@
 class hello {
   static paramTypes = { }
 
-  constructor (world, player, unit, params) {
+  constructor (world, player, unit, modifier, params) {
     this.world = world
     this.player = player
     this.unit = unit
