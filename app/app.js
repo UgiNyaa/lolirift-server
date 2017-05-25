@@ -1,5 +1,6 @@
 const WebSocket = require('ws')
 const url = require('url')
+const crypto = require('crypto')
 
 const base = require('./units/base')
 const loli = require('./units/loli')
@@ -15,15 +16,41 @@ var world = {
 const wss = new WebSocket.Server({ port: 8080 })
 
 wss.on('connection', (ws) => {
+  if (ws.upgradeReq.headers.authorization === undefined) {
+    ws.send(JSON.stringify({ action: 'error', message: 'no authentication' }))
+    console.log('error')
+    ws.close()
+    return
+  }
 
-  var player = world.players.find((p) => p.name === ws.upgradeReq.headers.name)
+  var auth = new Buffer(ws.upgradeReq.headers.authorization.split(' ')[1], 'base64').toString('ascii')
+  var namepass = auth.split(':')
+
+  if (namepass.length !== 2) {
+    ws.send(JSON.stringify({ action: 'error', message: 'authentication error' }))
+    console.log('error')
+    ws.close()
+    return
+  }
+
+  var name = namepass[0]
+  var passHash = crypto.createHash('md5').update(namepass[1]).digest('hex')
+
+  var player = world.players.find((p) => p.name === name)
+
+  if (player !== undefined && player.passHash !== passHash) {
+    ws.send(JSON.stringify({ action: 'error', message: 'wrong password for playername: ' + name }))
+    console.log('error')
+    ws.close()
+    return
+  }
 
   // checking whether the player with the given name is already in the world or not
   if (player !== undefined) {
     // if he is, check whether the player is active or not
     if (player.active) {
       // if the player with the given name is alredy active, respond with an error
-      ws.send({ action: 'error', message: 'player with the name ' + ws.upgradeReq.headers.name + ' already is active'})
+      ws.send(JSON.stringify({ action: 'error', message: 'player with the name ' + name + ' already is active'}))
 
       // and close the connection
       ws.close()
@@ -49,7 +76,8 @@ wss.on('connection', (ws) => {
     // if there is no player with the given name at all, create the player with new id and the given name
     player = {
       id: nextPlayerID++,
-      name: ws.upgradeReq.headers.name,
+      name,
+      passHash,
       ws,
       active: true,
     }
