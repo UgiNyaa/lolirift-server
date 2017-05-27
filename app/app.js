@@ -146,8 +146,6 @@ wss.on('connection', (ws) => {
     player.active = false
     player.ws = undefined
   })
-
-  ws.send(JSON.stringify({ msg: 'you succesfully connected' }))
 });
 
 setInterval(() => {
