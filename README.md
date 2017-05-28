@@ -4,6 +4,8 @@ The lolirift-server contains the logic implementation of the lolirift world, so 
 
 ## Prove your waifu is superior!
 
+You play a lolicon in a world full of lolis, but there is a problem: there are other lolicons too! To have all lolis on your side your goal is to defeat the other lolicons. How you do it is up to you.
+
 The lolirift-server offeers a way for users to make a server you can connect to with [lolirift-client](https://github.com/htl22-3ahif/lolirift-client) client, and enjoy a lolified take on real time strategy games.
 
 ## Getting Started
