@@ -1,3 +1,5 @@
+const { readyToSend } = require('../utils')
+
 class walk {
   static paramTypes = {
     destination: {
@@ -24,7 +26,6 @@ class walk {
 
     this.direction.x /= length
     this.direction.y /= length
-    player.ws.send(JSON.stringify(this.direction))
 
     this.actualPosition = {
       x: this.unit.position.x,
@@ -57,12 +58,12 @@ class walk {
 
     if (this.roundx(this.actualPosition.x) !== this.unit.position.x) {
       this.unit.position.x = this.roundx(this.actualPosition.x)
-      this.player.ws.send(JSON.stringify(this.unit))
+      this.player.ws.send(readyToSend([ this.unit ]))
     }
 
     if (this.roundy(this.actualPosition.y) !== this.unit.position.y) {
       this.unit.position.y = this.roundy(this.actualPosition.y)
-      this.player.ws.send(JSON.stringify(this.unit))
+      this.player.ws.send(readyToSend([ this.unit ]))
     }
 
     if (
