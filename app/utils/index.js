@@ -1,5 +1,5 @@
 module.exports = {
-  readyToSend: (actionPath, units) => {
+  readyToSend: (units) => {
     var json = {
       units: [],
       actions: []

@@ -1,3 +1,5 @@
+const { readyToSend } = require('../utils')
+
 class train {
   static paramTypes = { }
 
@@ -16,7 +18,7 @@ class train {
   run (dt) {
     if (this.remaining <= 0) {
       this.world.units.push(this.trained)
-      this.player.ws.send(JSON.stringify(this.trained))
+      this.player.ws.send(readyToSend([ this.trained ]))
       return false
     }
 

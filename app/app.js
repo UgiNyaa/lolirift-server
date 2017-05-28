@@ -73,7 +73,7 @@ wss.on('connection', (ws) => {
           unitsToSend.push(world.units[i])
         }
       }
-      ws.send(readyToSend('./actions', unitsToSend))
+      ws.send(readyToSend(unitsToSend))
     }
   } else {
     // if there is no player with the given name at all, create the player with new id and the given name
@@ -95,7 +95,7 @@ wss.on('connection', (ws) => {
     baseUnit.position.y = player.id * 10
     world.units.push(baseUnit)
 
-    ws.send(readyToSend('./actions', [ baseUnit ]))
+    ws.send(readyToSend([ baseUnit ]))
 
     // var loliUnit = loli(player.id)
     // loliUnit.position.x = player.id * 10 + 5
