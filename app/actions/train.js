@@ -1,4 +1,6 @@
 class train {
+  static paramTypes = { }
+
   constructor (world, player, unit, modifier, params) {
     this.world = world
     this.player = player

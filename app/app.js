@@ -1,6 +1,7 @@
 const WebSocket = require('ws')
 const url = require('url')
 const crypto = require('crypto')
+const { readyToSend } = require('./utils')
 
 const base = require('./units/base')
 const loli = require('./units/loli')
@@ -17,7 +18,7 @@ const wss = new WebSocket.Server({ port: 8080 })
 
 wss.on('connection', (ws) => {
   if (ws.upgradeReq.headers.authorization === undefined) {
-    ws.send(JSON.stringify({ action: 'error', message: 'no authentication' }))
+    ws.send(JSON.stringify({ error: 'no authentication' }))
     console.log('error')
     ws.close()
     return
@@ -27,7 +28,7 @@ wss.on('connection', (ws) => {
   var namepass = auth.split(':')
 
   if (namepass.length !== 2) {
-    ws.send(JSON.stringify({ action: 'error', message: 'authentication error' }))
+    ws.send(JSON.stringify({ error: 'authentication error' }))
     console.log('error')
     ws.close()
     return
@@ -39,7 +40,7 @@ wss.on('connection', (ws) => {
   var player = world.players.find((p) => p.name === name)
 
   if (player !== undefined && player.passHash !== passHash) {
-    ws.send(JSON.stringify({ action: 'error', message: 'wrong password for playername: ' + name }))
+    ws.send(JSON.stringify({ error: 'wrong password for playername: ' + name }))
     console.log('error')
     ws.close()
     return
@@ -50,7 +51,7 @@ wss.on('connection', (ws) => {
     // if he is, check whether the player is active or not
     if (player.active) {
       // if the player with the given name is alredy active, respond with an error
-      ws.send(JSON.stringify({ action: 'error', message: 'player with the name ' + name + ' already is active'}))
+      ws.send(JSON.stringify({ error: 'player with the name ' + name + ' already is active'}))
 
       // and close the connection
       ws.close()
@@ -66,11 +67,13 @@ wss.on('connection', (ws) => {
       player.ws = ws
 
       // send him all his unit informations
+      var unitsToSend = []
       for (var i = 0; i < world.units.length; i++) {
         if (world.units[i].owner === player.id) {
-          ws.send(JSON.stringify(world.units[i]))
+          unitsToSend.push(world.units[i])
         }
       }
+      ws.send(readyToSend('./actions', unitsToSend))
     }
   } else {
     // if there is no player with the given name at all, create the player with new id and the given name
@@ -92,7 +95,7 @@ wss.on('connection', (ws) => {
     baseUnit.position.y = player.id * 10
     world.units.push(baseUnit)
 
-    ws.send(JSON.stringify(baseUnit))
+    ws.send(readyToSend('./actions', [ baseUnit ]))
 
     // var loliUnit = loli(player.id)
     // loliUnit.position.x = player.id * 10 + 5
@@ -109,7 +112,7 @@ wss.on('connection', (ws) => {
     try {
       var json = JSON.parse(message)
     } catch (e) {
-      ws.send(JSON.stringify({ message: 'not a valid json message'}))
+      ws.send(JSON.stringify({ error: 'not a valid json message'}))
       return
     }
 
@@ -118,13 +121,13 @@ wss.on('connection', (ws) => {
 
     // checking whether the player owns this unit
     if (unit.owner !== player.id) {
-      ws.send(JSON.stringify({ message: 'you do not own this unit' }))
+      ws.send(JSON.stringify({ error: 'you do not own this unit' }))
       return
     }
 
     // checking whether the unit can be manipulated with this action
     if (unit.actions.find((a) => a === json.action) === undefined) {
-      ws.send(JSON.stringify({ message: 'this unit can not use the action: ' + json.action }))
+      ws.send(JSON.stringify({ error: 'this unit can not use the action: ' + json.action }))
       return
     }
 
