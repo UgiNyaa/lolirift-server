@@ -4,6 +4,7 @@ module.exports = (owner) => {
   return {
     id: id(),
     owner,
+    type: 'base',
 
     position: {
       x: 0,
