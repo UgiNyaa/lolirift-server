@@ -1,4 +1,4 @@
-# lolirift-server
+# lolirift server
 
 The lolirift-server contains the logic implementation of the lolirift world, so every __unit__ and __action__ is defined and implemented here. The client merely takes all that information and renders them on screen.
 
@@ -14,7 +14,7 @@ The lolirift-server offeers a way for users to make a server you can connect to 
 - cd into the repository
 - execute `npm install` to install
 
-### launching the client
+### launching the server
 
 - cd into the repository
 - execute `npm start` to start
@@ -82,16 +82,16 @@ As next there are the __units__. With these, you can win, but also loose the gam
 unit: {
   "id": 0,
   "owner": "some player",
-  "type": "loli",
+  "type": "remilia",
   "position": {
     "x": 0,
     "y": 0
   },
   "vertices": [],
   "stats": {
-    "health": 100
+    "health": 1000
   },
-  "actions": [ "walk" ]
+  "actions": [ "walk", "destroy everything" ]
 }
 ```
 
